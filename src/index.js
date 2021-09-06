@@ -7,9 +7,13 @@ import API from './js/apiService';
 const refs = {
   form: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
-  loadMore: document.querySelector('.btn-loadMore')
+  loadMore: document.querySelector('.btn-loadMore'),
+  hiddenElement: document.querySelector('.box')
 }
 
+console.dir(refs.loadMore)
+refs.loadMore.hidden = true
+// refs.loadMore.disabled = true
 let searchValue = '';
 let pageNumber = 1;
 
@@ -23,24 +27,29 @@ function getData(e) {
   searchValue = refs.form.firstElementChild.value;
 
   getAndRender(searchValue, pageNumber)
+  refs.loadMore.hidden = false
 }
 
 function getAndRender(searchValue, pageNumber) {
   API.queryByValue(searchValue, pageNumber)
   .then(arr => renderData(arr))
     .catch(err => console.log(err.message))
-//     .finally(() => {
-//       const element = document.getElementById('.btn-loadMore');
-//         element.scrollIntoView({
-//           behavior: 'smooth',
-//           block: 'end',
-// });
-//       loader = false
-//     })
+    .finally(() => {
+      // return refs.loadMore.hidden = true
+      // loader = false
+    })
+}
+
+function onScroll() {
+  refs.hiddenElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+});
 }
 
 function renderData(data) {
   refs.gallery.insertAdjacentHTML("beforeend", imageCard(data))
+  refs.loadMore.hidden = true
 }
 
 function onLoadMore(e) {
