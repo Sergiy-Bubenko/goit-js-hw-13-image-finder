@@ -24,42 +24,41 @@ btnLM.addEventListener('click', debounce(onScroll, 750));
 function getData(e) {
   e.preventDefault();
 
+  pageNumber = 1;
   refs.gallery.innerHTML = '';
   btnLM.disabled = true;
   btnLM.textContent = 'Loading...';
   searchValue = refs.form.firstElementChild.value.trim();
   getAndRender(searchValue, pageNumber);
 };
- 
- function getAndRender(searchValue, pageNumber) {
-   API.queryByValue(searchValue, pageNumber)
-     .then(arr => {
-      
-       if (arr.total === 0) {
-         btnLM.hidden = true;
-         return error({
-           text: 'No results were found for this request. Change your request!'
-         })
-       }
-       renderData(arr);
-     })
-     .catch(err => {
+function getAndRender(searchValue, pageNumber) {
+  API.queryByValue(searchValue, pageNumber)
+  .then(arr => {
+    if (arr.total === 0) {
+      btnLM.hidden = true;
+      return error({
+        text: 'No results were found for this request. Change your request!'
+      })
+    }
+    renderData(arr);
+  })
+  .catch(err => {
        console.error(err.message)
-     });
-};
-
+      });
+    };
+    
 function renderData(data) {
   refs.gallery.insertAdjacentHTML("beforeend", imageCardHBS(data));
 
-    if (data.total / 12 <= pageNumber) {
-      btnLM.textContent = 'No more pictures!'
+  if (data.total / 12 <= pageNumber) {
+    btnLM.textContent = 'No more pictures!'
       btnLM.hidden = false;
       btnLM.disabled = true;
       
       return
-  };
-
-  btnLM.disabled = false;
+    };
+    
+    btnLM.disabled = false;
   btnLM.hidden = false;
   btnLM.textContent = 'Load more';
 }
