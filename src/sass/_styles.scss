@@ -36,10 +36,12 @@ body {
   margin-top: 30px;
   font-size: 24px;
 
-  & .btn-loadMore {
+  & .btn-loadMore,
+  & .btn-scroll-up {
     border-radius: 5px;
+    margin: 10px;
     padding: 20px;
-    min-width: 20rem;
+    min-width: 19rem;
     background-color: rgb(35, 18, 189);
     color: cornsilk;
   }
