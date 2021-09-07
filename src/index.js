@@ -1,7 +1,9 @@
-// 'use strict';
+'use strict';
 import './sass/main.scss';
-import debounce from 'lodash.debounce'
-import imageCard from './templates/imageCard.hbs';
+import '@pnotify/core/dist/BrightTheme.css';
+import { error } from '../node_modules/@pnotify/core/dist/PNotify.js';
+import debounce from 'lodash.debounce';
+import imageCardHBS from './templates/imageCard.hbs';
 import API from './js/apiService';
 
 const refs = {
@@ -9,56 +11,69 @@ const refs = {
   gallery: document.querySelector('.gallery'),
   loadMore: document.querySelector('.btn-loadMore'),
   hiddenElement: document.querySelector('.box')
-}
+};
+const btnLM = refs.loadMore;
 
-console.dir(refs.loadMore)
-refs.loadMore.hidden = true
-// refs.loadMore.disabled = true
 let searchValue = '';
 let pageNumber = 1;
 
-refs.form.addEventListener('input', debounce(getData, 500))
-refs.loadMore.addEventListener('click', onLoadMore)
+refs.form.addEventListener('input', debounce(getData, 500));
+btnLM.addEventListener('click', onLoadMore);
+btnLM.addEventListener('click', debounce(onScroll, 750));
 
 function getData(e) {
-  e.preventDefault()
+  e.preventDefault();
 
   refs.gallery.innerHTML = '';
-  searchValue = refs.form.firstElementChild.value;
+  btnLM.disabled = true;
+  btnLM.textContent = 'Loading...';
+  searchValue = refs.form.firstElementChild.value.trim();
+  getAndRender(searchValue, pageNumber);
+};
+ 
+ function getAndRender(searchValue, pageNumber) {
+   API.queryByValue(searchValue, pageNumber)
+     .then(arr => {
+      
+       if (arr.total === 0) {
+         btnLM.hidden = true;
+         return error({
+           text: 'No results were found for this request. Change your request!'
+         })
+       }
+       renderData(arr);
+     })
+     .catch(err => {
+       console.error(err.message)
+     });
+};
 
+function renderData(data) {
+  refs.gallery.insertAdjacentHTML("beforeend", imageCardHBS(data));
+
+    if (data.total / 12 <= pageNumber) {
+      btnLM.textContent = 'No more pictures!'
+      btnLM.hidden = false;
+      btnLM.disabled = true;
+      
+      return
+  };
+
+  btnLM.disabled = false;
+  btnLM.hidden = false;
+  btnLM.textContent = 'Load more';
+}
+
+function onLoadMore() {
+  pageNumber += 1;
+  btnLM.disabled = true;
+  btnLM.textContent = 'Loading...';
   getAndRender(searchValue, pageNumber)
-  refs.loadMore.hidden = false
-}
-
-function getAndRender(searchValue, pageNumber) {
-  API.queryByValue(searchValue, pageNumber)
-  .then(arr => renderData(arr))
-    .catch(err => console.log(err.message))
-    .finally(() => {
-      // return refs.loadMore.hidden = true
-      // loader = false
-    })
-}
+};
 
 function onScroll() {
   refs.hiddenElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'end',
-});
+    behavior: 'smooth',
+    block: 'end',
+  });
 }
-
-function renderData(data) {
-  refs.gallery.insertAdjacentHTML("beforeend", imageCard(data))
-  refs.loadMore.hidden = true
-}
-
-function onLoadMore(e) {
-  console.log(e);
-  pageNumber += 1
-
-  getAndRender(searchValue, pageNumber)
-
-}
-
-
-
